@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 from flask import Flask
 from anomaly_detection.api.services import service
 
@@ -28,16 +29,17 @@ class ServerManager:
 
     def _init_server(self):
         self.app.url_map.strict_slashes = False
-
         # register router
-        # self.app.register_blueprint(class_name)
         self.app.register_blueprint(service)
 
     def start(self):
         self.app.run("127.0.0.1", "8085")
 
 
-server_manager = ServerManager()
+def main():
+    server_manager = ServerManager()
+    server_manager.start()
+
 
 if __name__ == '__main__':
-    server_manager.start()
+    sys.exit(main())

@@ -1,2 +1,2 @@
-# orchestration
-Repo for automation and orchestration
+# anomaly-detection
+Repo for anomaly detection
