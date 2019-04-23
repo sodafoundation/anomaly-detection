@@ -12,17 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import jsonify
-from flask import Blueprint
-# from flask import request
-from anomaly_detection import log
+# Binary unit constants.
+Ki = 1024
+Mi = 1024 ** 2
+Gi = 1024 ** 3
+Ti = 1024 ** 4
+Pi = 1024 ** 5
+Ei = 1024 ** 6
+Zi = 1024 ** 7
+Yi = 1024 ** 8
 
-service = Blueprint("service", __name__)
-LOG = log.getLogger(__name__)
-
-
-@service.route("/", methods=['GET'])
-@service.route("/v1beta", methods=['GET'])
-def get_version():
-    LOG.debug("get anomaly detection version")
-    return jsonify(name="Anomaly Detection", version="v1beta"), 200
+# Decimal unit constants.
+k = 1000
+M = 1000 ** 2
+G = 1000 ** 3
+T = 1000 ** 4
+P = 1000 ** 5
+E = 1000 ** 6
+Z = 1000 ** 7
+Y = 1000 ** 8
