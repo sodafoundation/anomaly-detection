@@ -87,3 +87,4 @@ class NotFound(AnomalyDetectionException):
     message = "Resource could not be found."
     code = 404
     safe = True
+

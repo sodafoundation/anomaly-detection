@@ -26,7 +26,7 @@ class ServerManager:
         self._init_server()
 
     def _init_logging(self):
-        log.setup(log.Config, "manila")
+        log.setup(log.Config, "anomaly_detection")
 
     def _init_server(self):
         self.app.url_map.strict_slashes = False

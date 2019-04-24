@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from sqlalchemy import DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, Boolean
-from sqlalchemy import DateTime
 from sqlalchemy.orm import object_mapper
 import datetime
 import six
@@ -133,7 +132,7 @@ Base = declarative_base()
 
 
 class AnomalyDetectionBase(ModelBase, TimestampMixin):
-    """Base class for Manila Models."""
+    """Base class for Anomaly Detection Models."""
     __table_args__ = {'mysql_engine': 'InnoDB'}
     metadata = None
     __table_initialized__ = False

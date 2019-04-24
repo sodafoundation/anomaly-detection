@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.orm import sessionmaker
-from anomaly_detection.db import models
+from anomaly_detection import utils
 
 
+class Base(object):
+    """DB driver is injected in the init method."""
 
+    def __init__(self, db_driver="anomaly_detection.db"):
+        super(Base, self).__init__()
+        self.db = utils.import_module(db_driver)

@@ -312,7 +312,7 @@ _loggers = {}
 
 
 def get_loggers():
-    """Return a copy of the oslo loggers dictionary."""
+    """Return a copy of the loggers dictionary."""
     return _loggers.copy()
 
 
