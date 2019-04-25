@@ -11,22 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from flask import jsonify
-from flask import Blueprint
-# from flask import request
-from anomaly_detection import log
-from anomaly_detection.db import api
-from anomaly_detection.utils import uuid
-from anomaly_detection import context as ctx
-
-service = Blueprint("service", __name__)
-LOG = log.getLogger(__name__)
+import sys
 
 
-@service.route("/", methods=['GET'])
-@service.route("/v1beta", methods=['GET'])
-def get_version():
-    LOG.debug("get anomaly detection version")
-
-    return jsonify(name="Anomaly Detection", version="v1beta"), 200
+def import_module(import_str):
+    """Import a module.
+    """
+    __import__(import_str)
+    return sys.modules[import_str]

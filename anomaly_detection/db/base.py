@@ -11,15 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, String, Integer
+from anomaly_detection import utils
 
 
-BaseModel = declarative_base()
+class Base(object):
+    """DB driver is injected in the init method."""
 
-
-class Services(BaseModel):
-    __tablename__ = "service"
-    id = Column(Integer, primary_key=True)
-    name = Column(String(50))
+    def __init__(self, db_driver="anomaly_detection.db"):
+        super(Base, self).__init__()
+        self.db = utils.import_module(db_driver)

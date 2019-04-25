@@ -15,6 +15,7 @@
 import sys
 from flask import Flask
 from anomaly_detection.api.services import service
+from anomaly_detection import log
 
 
 class ServerManager:
@@ -25,7 +26,7 @@ class ServerManager:
         self._init_server()
 
     def _init_logging(self):
-        pass
+        log.setup(log.Config, "anomaly_detection")
 
     def _init_server(self):
         self.app.url_map.strict_slashes = False
