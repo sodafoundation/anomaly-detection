@@ -11,11 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
 
 
-def import_module(import_str):
-    """Import a module.
-    """
-    __import__(import_str)
-    return sys.modules[import_str]
+def main():
+    pass

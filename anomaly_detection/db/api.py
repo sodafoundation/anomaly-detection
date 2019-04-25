@@ -19,9 +19,6 @@ from anomaly_detection import utils
 LOG = log.getLogger(__name__)
 
 
-
-
-
 class DBAPI(object):
     """Initialize the chosen DB API backend.
     """
@@ -61,15 +58,6 @@ class DBAPI(object):
                    backend_mapping=backend_mapping,
                    lazy=lazy)
 
-# return cls(backend_name=conf.database.backend,
-#            backend_mapping=backend_mapping,
-#            lazy=lazy,
-#            use_db_reconnect=conf.database.use_db_reconnect,
-#            retry_interval=conf.database.db_retry_interval,
-#            inc_retry_interval=conf.database.db_inc_retry_interval,
-#            max_retry_interval=conf.database.db_max_retry_interval,
-#            max_retries=conf.database.db_max_retries)
-
 
 class Config:
     class Database:
@@ -77,7 +65,9 @@ class Config:
     database = Database
 
 
+# TODO: Add support for other types of databases in a plugin model
 _BACKEND_MAPPING = {'sqlalchemy': 'anomaly_detection.db.sqlalchemy.api'}
+
 IMPL = DBAPI.from_config(Config, backend_mapping=_BACKEND_MAPPING, lazy=True)
 
 
@@ -91,19 +81,3 @@ def training_get(context, training_id):
 
 def init_db():
     IMPL.init_db()
-
-
-from anomaly_detection.utils import uuid
-from anomaly_detection import context as ctx
-
-
-if __name__ == '__main__':
-    # __import__("anomaly_detection.db.sqlalchemy")
-
-    IMPL.init_db()
-    training = {
-        "tenant_id": uuid.generate_uuid(),
-        "algorithm": "gaussian",
-        "properties": "training model test properties"
-    }
-    training_create(ctx.get_admin_context(), training)
