@@ -11,12 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
 import threading
+
+from anomaly_detection.utils import config as cfg
 from anomaly_detection import log
 from anomaly_detection import utils
 
 LOG = log.getLogger(__name__)
+CONF = cfg.CONF
+
+db_opts = [
+    cfg.StrOpt('backend',
+               default='sqlalchemy',
+               help='The back end to use for the database.'),
+    cfg.StrOpt('connection',
+               help='The SQLAlchemy connection string to use to connect to '
+                    'the database.',
+               secret=True)
+]
+CONF.register_opts(db_opts, group='database')
 
 
 class DBAPI(object):
@@ -59,16 +72,10 @@ class DBAPI(object):
                    lazy=lazy)
 
 
-class Config:
-    class Database:
-        backend = "sqlalchemy"
-    database = Database
-
-
 # TODO: Add support for other types of databases in a plugin model
 _BACKEND_MAPPING = {'sqlalchemy': 'anomaly_detection.db.sqlalchemy.api'}
 
-IMPL = DBAPI.from_config(Config, backend_mapping=_BACKEND_MAPPING, lazy=True)
+IMPL = DBAPI.from_config(CONF, backend_mapping=_BACKEND_MAPPING, lazy=True)
 
 
 def training_create(context, training_values):

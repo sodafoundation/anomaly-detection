@@ -168,6 +168,9 @@ class AnomalyDetectionBase(ModelBase, TimestampMixin):
 class Training(Base, AnomalyDetectionBase):
     __tablename__ = "training"
     id = Column(String(36), primary_key=True)
+    name = Column(String(255), nullable=True)
+    description = Column(String(255), nullable=True)
     tenant_id = Column(String(255), index=True)
     algorithm = Column(String(36))
     properties = Column(String(255))
+    model_data = Column(String(255))

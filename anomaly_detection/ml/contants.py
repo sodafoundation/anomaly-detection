@@ -12,21 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import jsonify
-from flask import Blueprint
-# from flask import request
-from anomaly_detection import log
-from anomaly_detection.db import api
-from anomaly_detection.utils import uuid
-from anomaly_detection import context as ctx
+GAUSSIAN_MODEL = "gaussian"
 
-service = Blueprint("service", __name__)
-LOG = log.getLogger(__name__)
-
-
-@service.route("/", methods=['GET'])
-@service.route("/v1beta", methods=['GET'])
-def get_version():
-    LOG.debug("get anomaly detection version")
-
-    return jsonify(name="Anomaly Detection", version="v1beta"), 200

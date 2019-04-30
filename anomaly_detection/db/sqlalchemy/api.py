@@ -12,14 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from anomaly_detection.db.sqlalchemy import models
-from anomaly_detection import exception
-from anomaly_detection.utils import uuid
-from functools import wraps
-import sqlalchemy.orm
 import copy
-import warnings
 import sys
+import warnings
+from functools import wraps
+
+import sqlalchemy.orm
+
+from anomaly_detection import exception
+from anomaly_detection.db.sqlalchemy import models
+from anomaly_detection.utils import uuid, config as cfg
+
+CONF = cfg.CONF
 
 
 class Session(sqlalchemy.orm.session.Session):
@@ -75,14 +79,16 @@ class EngineFacade(object):
         return self._session_maker(**kwargs)
 
 
-_DEFAULT_SQL_CONNECTION = 'sqlite:///anomaly_detection.db'
+_DEFAULT_SQL_CONNECTION = 'sqlite://'
 _FACADE = None
+
+CONF.set_default("connection", _DEFAULT_SQL_CONNECTION, group="database")
 
 
 def _create_facade_lazily():
     global _FACADE
     if _FACADE is None:
-        _FACADE = EngineFacade(_DEFAULT_SQL_CONNECTION)
+        _FACADE = EngineFacade(CONF.database.connection)
     return _FACADE
 
 
