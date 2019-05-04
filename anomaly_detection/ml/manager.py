@@ -11,6 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import io
+
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+
 from anomaly_detection.db.base import Base
 from anomaly_detection.utils import import_object
 
@@ -27,15 +31,17 @@ class MLManager(Base):
     def create_training(self, ctx, training):
         algorithm = training.get("algorithm")
         driver = self._get_algorithm(algorithm)
-        model_data = driver.create_training(training)
-        training["model_data"] = model_data
+        training["model_data"] = driver.create_training(training)
         return self.db.training_create(ctx, training)
 
     def get_training_pic(self, ctx, training_id):
         training = self.db.training_get(ctx, training_id)
         algorithm = training.get("algorithm")
         driver = self._get_algorithm(algorithm)
-        return driver.get_prediction_pic(training)
+        fig = driver.get_training_pic(training)
+        output = io.BytesIO()
+        FigureCanvas(fig).print_png(output)
+        return output.getvalue()
 
     def prediction(self, ctx, training_id, dataset):
         training = self.db.training_get(ctx, training_id)

@@ -15,17 +15,21 @@
 from flask import Blueprint
 from flask import jsonify
 from flask import request
+from flask import Response
 
 from anomaly_detection import log
 from anomaly_detection.ml import manager
+from anomaly_detection.api.view import training as training_view
 
 service = Blueprint("service", __name__)
 LOG = log.getLogger(__name__)
 ml_mgr = manager.MLManager()
+
+training_view_builder = training_view.ViewBuilder()
+
+
 # List Algorithms
 # URL: GET /v1beta/<tenant_id>/algorithms
-
-
 @service.route("<tenant_id>/algorithm", methods=['GET'])
 def list_algorithm(tenant_id):
     resp = {
@@ -38,6 +42,7 @@ def list_algorithm(tenant_id):
 
     }
     return jsonify(resp), 200
+
 
 # Create Training
 # URL: POST /v1beta/<tenant_id>/training
@@ -53,17 +58,22 @@ def list_algorithm(tenant_id):
 #         }
 #     }
 # }
-
-
 @service.route("<tenant_id>/training", methods=['POST'])
 def create_training(tenant_id):
     LOG.debug("starting training, tenant_id: %s", tenant_id)
     ctx = request.environ['anomaly_detection.context']
-    body = request.get_json()
-    training = body['training']
-    training['tenant_id'] = tenant_id
-    print(training)
-    resp = ml_mgr.create_training(ctx, training)
-    return jsonify(resp), 200
+    body = request.get_json().get('training', {})
+    body['tenant_id'] = tenant_id
+    print(body)
+    training = ml_mgr.create_training(ctx, body)
+    return jsonify(training_view_builder.detail(training)), 200
+
+
+@service.route("<tenant_id>/training/<training_id>/pic.png", methods=['GET'])
+def get_training_pic(tenant_id, training_id):
+    LOG.debug("get training pic, tenant_id: %s", tenant_id)
+    ctx = request.environ['anomaly_detection.context']
+    img = ml_mgr.get_training_pic(ctx, training_id)
+    return Response(img, mimetype='image/png')
 
 
