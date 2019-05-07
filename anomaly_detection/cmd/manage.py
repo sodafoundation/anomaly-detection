@@ -12,10 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import argparse
-import sys
 import os
+import sys
+
 from anomaly_detection import log
 from anomaly_detection.db import api
+from anomaly_detection.utils import config as cfg
+from anomaly_detection.common import options # Need to register global_opts  # noqa
+
+CONF = cfg.CONF
 
 
 def args(*args, **kwargs):
@@ -81,7 +86,6 @@ def add_command_parsers(subparsers):
 
 
 def main():
-
     script_name = sys.argv[0]
     if len(sys.argv) < 2:
         print(script_name + " category action [<args>]")
@@ -90,13 +94,21 @@ def main():
             print("\t%s" % category)
         sys.exit(2)
 
+    CONF(sys.argv[1:])
+    log.setup(CONF, "anomaly_detection")
     cmd = os.path.basename(script_name)
     top_parser = argparse.ArgumentParser(prog=cmd)
     subparsers = top_parser.add_subparsers()
     add_command_parsers(subparsers)
 
-    log.setup(log.Config, "anomaly_detection")
-
+    for i, arg in enumerate(sys.argv):
+        if arg == '--config-file':
+            sys.argv.pop(i)
+            sys.argv.pop(i)
+            break
+        if arg.startswith('--config-file='):
+            sys.argv.pop(i)
+            break
     match_args = top_parser.parse_args(sys.argv[1:])
     fn = match_args.action_fn
     fn_args = fetch_func_args(fn, match_args)

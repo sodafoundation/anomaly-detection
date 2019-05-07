@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import datetime
+
+import six
+from sqlalchemy import Column, String, Boolean
 from sqlalchemy import DateTime
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, String, Boolean
 from sqlalchemy.orm import object_mapper
-import datetime
-import six
 
 
 class ModelIterator(six.Iterator):
@@ -168,6 +169,8 @@ class AnomalyDetectionBase(ModelBase, TimestampMixin):
 class Training(Base, AnomalyDetectionBase):
     __tablename__ = "training"
     id = Column(String(36), primary_key=True)
+    name = Column(String(255), nullable=True)
+    description = Column(String(255), nullable=True)
     tenant_id = Column(String(255), index=True)
     algorithm = Column(String(36))
-    properties = Column(String(255))
+    model_data = Column(String(255))

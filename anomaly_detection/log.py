@@ -17,6 +17,7 @@ import logging.handlers
 import os
 import platform
 import sys
+from anomaly_detection.utils import config as cfg
 
 try:
     import syslog
@@ -46,22 +47,70 @@ LOG_ROTATE_INTERVAL_MAPPING = {
     'midnight': 'midnight'
 }
 _LOG_FILE = "anomaly_detection.log"
+_DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+logging_opts = [
+    cfg.BoolOpt('debug',
+                default=False,
+                help='If set to true, the logging level will be set to '
+                     'DEBUG instead of the default INFO level.'),
+    cfg.StrOpt('log_date_format',
+               default=_DEFAULT_LOG_DATE_FORMAT,
+               help='Defines the format string for %%(asctime)s in log '
+                    'records. Default: %(default)s . '),
+    cfg.StrOpt('log_file',
+               help='(Optional) Name of log file to send logging output to. '
+                    'If no default is set, logging will go to stderr as '
+                    'defined by use_stderr. '),
+    cfg.StrOpt('log_dir',
+               help='(Optional) The base directory used for relative log_file '
+                    ' paths. '),
+    cfg.StrOpt('log_rotate_interval_type',
+               choices=['Seconds', 'Minutes', 'Hours', 'Days', 'Weekday',
+                        'Midnight'],
+               ignore_case=True,
+               default='days',
+               help='Rotation interval type. The time of the last file '
+                    'change (or the time when the service was started) is '
+                    'used when scheduling the next rotation.'),
+    cfg.IntOpt('log_rotate_interval',
+               default=1,
+               help='The amount of time before the log files are rotated. '
+                    'This option is ignored unless log_rotation_type is set'
+                    'to "interval".'),
+    cfg.IntOpt('max_logfile_count',
+               default=30,
+               help='Maximum number of rotated log files.'),
+    cfg.IntOpt('max_logfile_size_mb',
+               default=200,
+               help='Log file maximum size in MB. This option is ignored if '
+                    '"log_rotation_type" is not set to "size".'),
+    cfg.StrOpt('log_rotation_type',
+               default='none',
+               choices=[('interval',
+                         'Rotate logs at predefined time intervals.'),
+                        ('size',
+                         'Rotate logs once they reach a predefined size.'),
+                        ('none', 'Do not rotate log files.')],
+               ignore_case=True,
+               help='Log rotation type.'),
+    cfg.StrOpt('logging_default_format_string',
+               default='%(asctime)s.%(msecs)03d %(process)d %(levelname)s '
+                       '%(name)s [-] %(instance)s%(message)s',
+               help='Format string to use for log messages when context is '
+                    'undefined. '
+                    'Used by oslo_log.formatters.ContextFormatter'),
+    cfg.BoolOpt('use_stderr',
+                default=False,
+                help='Log output to standard error. '),
+    cfg.BoolOpt('use_eventlog',
+                default=False,
+                help='Log output to Windows Event Log.'),
+]
 
 
-class Config(object):
-    log_rotate_interval_type = "weekday"
-    log_rotate_interval = 4
-    max_logfile_count = 10
-    max_logfile_size_mb = 200
-    log_rotation_type = "interval"
-    log_file = None
-    log_dir = None
-    log_date_format = "%Y-%m-%d %H:%M:%S"
-    logging_default_format_string = \
-        "%(asctime)s - %(levelname)s - %(filename)s[:%(lineno)d] - %(message)s"
-    debug = True
-    use_stderr = None
-    use_eventlog = None
+def register_opts(conf):
+    conf.register_opts(logging_opts)
 
 
 class ColorHandler(logging.StreamHandler):
@@ -227,7 +276,7 @@ def _get_log_file_path(conf, binary=None):
     return None
 
 
-def _setup_logging_from_conf(conf, project, version):
+def _setup_logging_from_conf(conf, project):
     log_root = getLogger(None).logger
 
     # Remove all handlers
@@ -337,7 +386,7 @@ def getLogger(name=None, project='unknown', version='unknown'):
     return _loggers[name]
 
 
-def setup(conf, product_name, version='unknown'):
+def setup(conf, product_name):
     """Setup logging for the current application."""
-    _setup_logging_from_conf(conf, product_name, version)
+    _setup_logging_from_conf(conf, product_name)
     sys.excepthook = _create_logging_excepthook(product_name)
