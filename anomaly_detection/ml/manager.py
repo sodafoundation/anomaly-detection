@@ -20,13 +20,14 @@ from anomaly_detection.utils import import_object
 
 
 class MLManager(Base):
-    _ALGORITHM_MAPPING = {"gaussian": "anomaly_detection.ml.algorithms.gaussian.Gaussian"}
+    _ALGORITHM_MAPPING = {"gaussian": "anomaly_detection.ml.algorithms.gaussian.Gaussian",
+                          "dbscan": "anomaly_detection.ml.algorithms.dbscan.DBSCAN"}
 
     def __init__(self):
         super(MLManager, self).__init__()
 
-    def _get_algorithm(self, name):
-        return import_object(self._ALGORITHM_MAPPING[name])
+    def _get_algorithm(self, name='gaussian'):
+        return import_object(self._ALGORITHM_MAPPING[name.lower()])
 
     def create_training(self, ctx, training):
         algorithm = training.get("algorithm")

@@ -127,6 +127,12 @@ def is_user_context(context):
         return False
     return True
 
+def authorize_tenant_context(context, tenant_id):
+    if is_user_context(context):
+        if not context.tenant_id:
+            raise exception.NotAuthorized()
+        elif context.tenant_id != tenant_id:
+            raise exception.NotAuthorized()
 
 def require_admin_context(f):
     """Decorator to require admin request context.
@@ -172,7 +178,7 @@ def model_query(context, model, *args, **kwargs):
     """
     session = kwargs.get('session') or get_session()
     read_deleted = kwargs.get('read_deleted') or context.read_deleted
-    project_only = kwargs.get('project_only')
+    tenant_only = kwargs.get('tenant_only')
 
     if not issubclass(model, models.ModelBase):
         raise TypeError("model should be a subclass of ModelBase")
@@ -185,7 +191,7 @@ def model_query(context, model, *args, **kwargs):
     else:
         raise Exception("Unrecognized read_deleted values '%s'" % read_deleted)
 
-    if project_only and is_user_context(context):
+    if tenant_only and is_user_context(context):
         query = query.filter_by(tenant_id=context.tenant_id)
     return query
 
@@ -197,9 +203,7 @@ def ensure_model_dict_has_id(model_dict):
 
 
 def _training_get_query(context, session=None):
-    if session is None:
-        session = get_session()
-    return model_query(context, models.Training, session=session)
+    return model_query(context, models.Training, tenant_only=True, session=session)
 
 
 @require_context
@@ -215,6 +219,14 @@ def training_create(context, training_values):
 
 
 @require_context
+def training_delete(context, training_id):
+    session = get_session()
+    with session.begin():
+        training_ref = training_get(context, training_id, session)
+        training_ref.delete(session)
+
+
+@require_context
 def training_get(context, training_id, session=None):
     result = _training_get_query(context, session).filter_by(id=training_id).first()
 
@@ -222,6 +234,22 @@ def training_get(context, training_id, session=None):
         raise exception.NotFound()
 
     return result
+
+
+@require_admin_context
+def training_get_all(context):
+    query = model_query(context, models.Training)
+    if query is None:
+        return []
+    return query.all()
+
+
+@require_context
+def training_get_all_by_tenant(context, tenant_id):
+    query = model_query(context, models.Training).filter_by(tenant_id=tenant_id)
+    if query is None:
+        return []
+    return query.all()
 
 
 def init_db():

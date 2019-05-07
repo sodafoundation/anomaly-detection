@@ -18,10 +18,10 @@ from flask import Flask
 
 from anomaly_detection import log
 from anomaly_detection.api.middleware.auth import NoAuthMiddleWare
-from anomaly_detection.api.service import service
+from anomaly_detection.api import v1beta
 from anomaly_detection.api.version import version
 from anomaly_detection.utils import config as cfg
-from anomaly_detection.common import options # Need to register global_opts  # noqa
+from anomaly_detection.common import options
 
 CONF = cfg.CONF
 
@@ -38,7 +38,7 @@ class ServerManager:
         self.app.wsgi_app = NoAuthMiddleWare(self.app.wsgi_app)
         # register router
         self.app.register_blueprint(version)
-        self.app.register_blueprint(service, url_prefix="/v1beta")
+        self.app.register_blueprint(v1beta.service, url_prefix="/v1beta")
 
     def start(self):
         self.app.run(CONF.apiserver.listen_ip, CONF.apiserver.listen_port)

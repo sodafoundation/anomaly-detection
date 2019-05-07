@@ -64,11 +64,16 @@ class Gaussian(AlgorithmBase):
 
     def create_training(self, training):
         data_path = CONF.apiserver.train_dataset_path
+        #  TODO: add read dataset from database
+        # cv: cross validation dataset
+        # gt: ground truth dataset
+        # tr: training dataset
         cv_data = ds.read(os.path.join(data_path, 'performance-cv.csv'))
         gt_data = ds.read(os.path.join(data_path, 'performance-gt.csv'))
         tr_data = ds.read(os.path.join(data_path, 'performance-tr.csv'))
         mu, sigma = estimate_gaussian(tr_data)
         p_cv = multivariate_gaussian(cv_data, mu, sigma)
+        # The epsilon value with highest f-score will be selected as threshold
         f1score, ep = select_threshold_by_cv(p_cv, gt_data)
         model_data = {"mu": mu, "sigma": sigma, "epsilon": ep, "f1_score": f1score}
         return np_json.dumps(model_data)
@@ -84,6 +89,7 @@ class Gaussian(AlgorithmBase):
         p = multivariate_gaussian(test_data, mu, sigma)
         outliers = np.asarray(np.where(p < ep))
         fig = plt.figure()
+        plt.title('Gaussian Estimated Figure')
         plt.xlabel("Latency (ms)")
         plt.ylabel("Throughput (mb/s)")
         plt.plot(test_data[:, 0], test_data[:, 1], "bx")

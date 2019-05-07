@@ -11,20 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from flask import Blueprint
-from flask import jsonify
-from flask import request
 
-from anomaly_detection import log
+service = Blueprint("service", __name__)
 
-version = Blueprint("version", __name__)
-LOG = log.getLogger(__name__)
-
-
-@version.route("/", methods=['GET'])
-@version.route("/v1beta", methods=['GET'])
-def get_version():
-    LOG.debug("get anomaly detection version")
-    return jsonify(name="Anomaly Detection", version="v1beta"), 200
-
+from anomaly_detection.api.v1beta import training

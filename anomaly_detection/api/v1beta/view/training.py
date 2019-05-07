@@ -23,5 +23,8 @@ class ViewBuilder(object):
             'tenant_id': training.get('tenant_id'),
             'algorithm': training.get('algorithm')
         }
-
         return {'training': training_dict}
+
+    def detail_list(self, trainings):
+        training_list = [self.detail(training)['training'] for training in trainings]
+        return {'trainings': training_list, 'count': len(training_list)}

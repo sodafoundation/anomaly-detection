@@ -13,4 +13,5 @@
 # limitations under the License.
 
 GAUSSIAN_MODEL = "gaussian"
+DBSCAN_MODEL = "DBSCAN"
 

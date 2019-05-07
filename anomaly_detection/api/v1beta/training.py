@@ -19,9 +19,10 @@ from flask import Response
 
 from anomaly_detection import log
 from anomaly_detection.ml import manager
-from anomaly_detection.api.view import training as training_view
+from anomaly_detection.api.v1beta.view import training as training_view
+from anomaly_detection.api.v1beta import service
+from anomaly_detection.db import api as db
 
-service = Blueprint("service", __name__)
 LOG = log.getLogger(__name__)
 ml_mgr = manager.MLManager()
 
@@ -29,7 +30,7 @@ training_view_builder = training_view.ViewBuilder()
 
 
 # List Algorithms
-# URL: GET /v1beta/<tenant_id>/algorithms
+# URL: GET /v1beta/<tenant_id>/algorithm
 @service.route("<tenant_id>/algorithm", methods=['GET'])
 def list_algorithm(tenant_id):
     resp = {
@@ -37,6 +38,10 @@ def list_algorithm(tenant_id):
             {
                 'name': 'gaussian',
                 'description': 'gaussian distribution'
+            },
+            {
+                'name': 'DBSCAN',
+                'description': 'Density-based spatial clustering of applications with noise'
             }
         ]
 
@@ -59,21 +64,44 @@ def list_algorithm(tenant_id):
 #     }
 # }
 @service.route("<tenant_id>/training", methods=['POST'])
-def create_training(tenant_id):
+def create(tenant_id):
     LOG.debug("starting training, tenant_id: %s", tenant_id)
     ctx = request.environ['anomaly_detection.context']
     body = request.get_json().get('training', {})
     body['tenant_id'] = tenant_id
-    print(body)
     training = ml_mgr.create_training(ctx, body)
     return jsonify(training_view_builder.detail(training)), 200
 
 
-@service.route("<tenant_id>/training/<training_id>/pic.png", methods=['GET'])
-def get_training_pic(tenant_id, training_id):
-    LOG.debug("get training pic, tenant_id: %s", tenant_id)
+@service.route("<tenant_id>/training/<training_id>", methods=['DELETE'])
+def delete(tenant_id, training_id):
+    LOG.debug("starting training, tenant_id: %s", tenant_id)
     ctx = request.environ['anomaly_detection.context']
-    img = ml_mgr.get_training_pic(ctx, training_id)
-    return Response(img, mimetype='image/png')
+    db.training_delete(ctx, training_id)
+    return "", 200
+
+
+def _get(ctx, training_id):
+    training = db.training_get(ctx, training_id)
+    return jsonify(training_view_builder.detail(training)), 200
+
+
+@service.route("<tenant_id>/training/<training_id>", methods=['GET'])
+def get(tenant_id, training_id):
+    ctx = request.environ['anomaly_detection.context']
+    typ = request.args.get('type')
+    if typ == 'image':
+        img = ml_mgr.get_training_pic(ctx, training_id)
+        return Response(img, mimetype='image/png')
+    else:
+        return _get(ctx, training_id)
+
+
+@service.route("<tenant_id>/training", methods=['GET'])
+def index(tenant_id):
+    ctx = request.environ['anomaly_detection.context']
+    trainings = db.training_get_all_by_tenant(ctx, tenant_id)
+    return jsonify(training_view_builder.detail_list(trainings)), 200
+
 
 

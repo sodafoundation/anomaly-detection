@@ -54,7 +54,6 @@ class DBAPI(object):
                 LOG.debug('Loading backend %(name)r from %(path)r',
                           {'name': self._backend_name,
                            'path': backend_path})
-                print(backend_path)
                 backend_mod = utils.import_module(backend_path)
                 self._backend = backend_mod.get_backend()
 
@@ -82,8 +81,20 @@ def training_create(context, training_values):
     return IMPL.training_create(context, training_values)
 
 
+def training_delete(context, training_id):
+    return IMPL.training_delete(context, training_id)
+
+
 def training_get(context, training_id):
     return IMPL.training_get(context, training_id)
+
+
+def training_get_all(context):
+    return IMPL.training_get_all(context)
+
+
+def training_get_all_by_tenant(context, tenant_id):
+    return IMPL.training_get_all_by_tenant(context, tenant_id)
 
 
 def init_db():
