@@ -91,8 +91,10 @@ def get(tenant_id, training_id):
     ctx = request.environ['anomaly_detection.context']
     typ = request.args.get('type')
     if typ == 'image':
-        img = ml_mgr.get_training_pic(ctx, training_id)
-        return Response(img, mimetype='image/png')
+        content_type = request.headers.get('Content-Type', default='image/png')
+        _image, _sep, fmt = content_type.strip().partition('/')
+        img = ml_mgr.get_training_figure(ctx, training_id, fmt)
+        return Response(img, mimetype='image/'+fmt)
     else:
         return _get(ctx, training_id)
 

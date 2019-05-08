@@ -19,6 +19,16 @@ from anomaly_detection.db.base import Base
 from anomaly_detection.utils import import_object
 
 
+def print_figure(fig, fmt='png'):
+    output = io.BytesIO()
+
+    if fmt not in ['png', 'jpg', 'jpeg', 'raw', 'tif', 'tiff', 'rgba']:
+        raise TypeError('unsupported image type: %s' % fmt)
+    canvas = FigureCanvas(fig)
+    getattr(canvas, 'print_' + fmt)(output)
+    return output.getvalue()
+
+
 class MLManager(Base):
     _ALGORITHM_MAPPING = {"gaussian": "anomaly_detection.ml.algorithms.gaussian.Gaussian",
                           "dbscan": "anomaly_detection.ml.algorithms.dbscan.DBSCAN"}
@@ -35,14 +45,12 @@ class MLManager(Base):
         training["model_data"] = driver.create_training(training)
         return self.db.training_create(ctx, training)
 
-    def get_training_pic(self, ctx, training_id):
+    def get_training_figure(self, ctx, training_id, fmt):
         training = self.db.training_get(ctx, training_id)
         algorithm = training.get("algorithm")
         driver = self._get_algorithm(algorithm)
-        fig = driver.get_training_pic(training)
-        output = io.BytesIO()
-        FigureCanvas(fig).print_png(output)
-        return output.getvalue()
+        fig = driver.get_training_figure(training)
+        return print_figure(fig, fmt)
 
     def prediction(self, ctx, training_id, dataset):
         training = self.db.training_get(ctx, training_id)
@@ -50,9 +58,10 @@ class MLManager(Base):
         driver = self._get_algorithm(algorithm)
         return driver.prediction(training, dataset)
 
-    def get_prediction_pic(self, ctx, training_id, dataset):
+    def get_prediction_figure(self, ctx, training_id, dataset, fmt):
         training = self.db.training_get(ctx, training_id)
         algorithm = training.get("algorithm")
         driver = self._get_algorithm(algorithm)
-        return driver.get_prediction_pic(training, dataset)
+        fig = driver.get_prediction_figure(training, dataset)
+        return print_figure(fig)
 

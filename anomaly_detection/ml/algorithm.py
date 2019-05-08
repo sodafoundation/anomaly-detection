@@ -20,11 +20,11 @@ class AlgorithmBase:
     def create_training(self, training):
         raise NotImplemented
 
-    def get_training_pic(self, training):
+    def get_training_figure(self, training):
         raise NotImplemented
 
     def prediction(self, training, dataset):
         raise NotImplemented
 
-    def get_prediction_pic(self, training, dataset):
+    def get_prediction_figure(self, training, dataset):
         raise NotImplemented
