@@ -47,7 +47,7 @@ class DBSCAN(AlgorithmBase):
 
     def create_training(self, training):
         data_path = CONF.apiserver.train_dataset_path
-        #  TODO: add read dataset from database
+        # TODO: add read dataset from database
         labels_true = ds.read(os.path.join(data_path, 'performance-gt.csv'))
         data = ds.read(os.path.join(data_path, 'performance-cv.csv'))
 
@@ -55,7 +55,7 @@ class DBSCAN(AlgorithmBase):
         ar_score, eps, min_samples = self._select_parameter(data, labels_true)
         return json.dumps({"adjusted_rand_score": ar_score, "epsilon": eps, "min_samples": min_samples})
 
-    def get_training_pic(self, training):
+    def get_training_figure(self, training):
         data_path = CONF.apiserver.train_dataset_path
         test_data = ds.read(os.path.join(data_path, 'performance-tr.csv'))
         md = json.loads(training.model_data)
@@ -79,5 +79,5 @@ class DBSCAN(AlgorithmBase):
     def prediction(self, training, dataset):
         return dataset
 
-    def get_prediction_pic(self, training, dataset):
+    def get_prediction_figure(self, training, dataset):
         pass

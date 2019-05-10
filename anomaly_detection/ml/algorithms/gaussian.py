@@ -64,7 +64,7 @@ class Gaussian(AlgorithmBase):
 
     def create_training(self, training):
         data_path = CONF.apiserver.train_dataset_path
-        #  TODO: add read dataset from database
+        # TODO: add read dataset from database
         # cv: cross validation dataset
         # gt: ground truth dataset
         # tr: training dataset
@@ -78,7 +78,7 @@ class Gaussian(AlgorithmBase):
         model_data = {"mu": mu, "sigma": sigma, "epsilon": ep, "f1_score": f1score}
         return np_json.dumps(model_data)
 
-    def get_training_pic(self, training):
+    def get_training_figure(self, training):
         data_path = CONF.apiserver.train_dataset_path
         test_data = ds.read(os.path.join(data_path, 'performance-tr.csv'))
         md = np_json.loads(training.model_data)
@@ -99,5 +99,5 @@ class Gaussian(AlgorithmBase):
     def prediction(self, training, dataset):
         return dataset
 
-    def get_prediction_pic(self, training, dataset):
+    def get_prediction_figure(self, training, dataset):
         pass

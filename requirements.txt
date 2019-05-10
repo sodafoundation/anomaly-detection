@@ -6,3 +6,4 @@ scikit-learn
 flask
 six>=1.5.2
 sqlalchemy
+Pillow
