@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from werkzeug.wrappers.request import Request
+
 from anomaly_detection.context import RequestContext
 
 NO_AUTH_ADMIN_TENANT_ID = 'admin_tenant'

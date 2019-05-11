@@ -14,7 +14,7 @@
 import datetime
 
 import six
-from sqlalchemy import Column, String, Boolean
+from sqlalchemy import Column, String, Boolean, Integer
 from sqlalchemy import DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import object_mapper
@@ -174,3 +174,12 @@ class Training(Base, AnomalyDetectionBase):
     tenant_id = Column(String(255), index=True)
     algorithm = Column(String(36))
     model_data = Column(String(255))
+
+
+class Performance(Base, AnomalyDetectionBase):
+    __tablename__ = "performace"
+    id = Column(String(36), primary_key=True)
+    latency = Column(Integer)
+    iops = Column(Integer)
+    ground_truth = Column(Integer, nullable=True)
+    time = Column(DateTime, nullable=True)

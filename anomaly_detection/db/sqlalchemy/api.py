@@ -18,6 +18,8 @@ import warnings
 from functools import wraps
 
 import sqlalchemy.orm
+from sqlalchemy.orm import load_only
+from sqlalchemy.sql import func
 
 from anomaly_detection import exception
 from anomaly_detection.db.sqlalchemy import models
@@ -183,7 +185,7 @@ def model_query(context, model, *args, **kwargs):
     if not issubclass(model, models.ModelBase):
         raise TypeError("model should be a subclass of ModelBase")
 
-    query = session.query(model, *args)
+    query = session.query(model) if not args else session.query(*args)
     if read_deleted in ('no', 'n', False):
         query = query.filter_by(deleted=False)
     elif read_deleted in ('yes', 'y', True):
@@ -200,6 +202,97 @@ def ensure_model_dict_has_id(model_dict):
     if not model_dict.get('id'):
         model_dict['id'] = uuid.generate_uuid()
     return model_dict
+
+
+def process_sort_params(sort_keys, sort_dirs, default_keys=None, default_dir='asc'):
+    if default_keys is None:
+        default_keys = ['created_at', 'id']
+
+    # Determine direction to use for when adding default keys
+    if sort_dirs and len(sort_dirs):
+        default_dir_value = sort_dirs[0]
+    else:
+        default_dir_value = default_dir
+
+    # Create list of keys (do not modify the input list)
+    if sort_keys:
+        result_keys = list(sort_keys)
+    else:
+        result_keys = []
+
+    # If a list of directions is not provided, use the default sort direction
+    # for all provided keys.
+    if sort_dirs:
+        result_dirs = []
+        # Verify sort direction
+        for sort_dir in sort_dirs:
+            if sort_dir not in ('asc', 'desc'):
+                msg = "Unknown sort direction, must be 'desc' or 'asc'."
+                raise exception.InvalidInput(reason=msg)
+            result_dirs.append(sort_dir)
+    else:
+        result_dirs = [default_dir_value for _sort_key in result_keys]
+
+    # Ensure that the key and direction length match
+    while len(result_dirs) < len(result_keys):
+        result_dirs.append(default_dir_value)
+    # Unless more direction are specified, which is an error
+    if len(result_dirs) > len(result_keys):
+        msg = "Sort direction array size exceeds sort key array size."
+        raise exception.InvalidInput(reason=msg)
+
+    # Ensure defaults are included
+    for key in default_keys:
+        if key not in result_keys:
+            result_keys.append(key)
+            result_dirs.append(default_dir_value)
+
+    return result_keys, result_dirs
+
+
+def is_orm_value(obj):
+    """Check if object is an ORM field or expression."""
+    return isinstance(obj, (sqlalchemy.orm.attributes.InstrumentedAttribute,
+                            sqlalchemy.sql.expression.ColumnElement))
+
+
+# TODO: add filter and marker features.
+def _pagination_query(context, session, model, limit=None, offset=None,
+                      sort_keys=None, sort_dirs=None):
+
+    sort_keys, sort_dirs = process_sort_params(sort_keys, sort_dirs)
+    query = model_query(context, model, session=session)
+    # Add sorting
+    for current_sort_key, current_sort_dir in zip(sort_keys, sort_dirs):
+        sort_dir_func = {
+            'asc': sqlalchemy.asc,
+            'desc': sqlalchemy.desc,
+        }[current_sort_dir]
+
+        try:
+            sort_key_attr = getattr(model, current_sort_key)
+        except AttributeError:
+            raise exception.InvalidInput(reason='Invalid sort key')
+        if not is_orm_value(sort_key_attr):
+            raise exception.InvalidInput(reason='Invalid sort key')
+        query = query.order_by(sort_dir_func(sort_key_attr))
+
+    if limit is not None:
+        query = query.limit(limit)
+    if offset is not None:
+        query = query.offset(offset)
+    return query
+
+
+def get_count(context, model, tenant_only=True):
+    session = get_session()
+    with session.begin():
+        query = model_query(context, model, func.count(model.id),
+                            session=session, tenant_only=tenant_only)
+        if query is None:
+            return 0
+        result = query.first()
+        return result[0] or 0
 
 
 def _training_get_query(context, session=None):
@@ -237,11 +330,16 @@ def training_get(context, training_id, session=None):
 
 
 @require_admin_context
-def training_get_all(context):
-    query = model_query(context, models.Training)
-    if query is None:
-        return []
-    return query.all()
+def training_get_all(context, limit=None, offset=None,
+                     sort_keys=None, sort_dirs=None):
+    session = get_session()
+    with session.begin():
+        query = _pagination_query(context, session, models.Training,
+                                  limit=limit, offset=offset,
+                                  sort_keys=sort_keys, sort_dirs=sort_dirs)
+        if query is None:
+            return []
+        return query.all()
 
 
 @require_context
@@ -250,6 +348,60 @@ def training_get_all_by_tenant(context, tenant_id):
     if query is None:
         return []
     return query.all()
+
+
+def _performance_get_query(context, session=None):
+    return model_query(context, models.Performance, tenant_only=True, session=session)
+
+
+@require_context
+def performance_create(context, performance_values):
+    values = copy.deepcopy(performance_values)
+    values = ensure_model_dict_has_id(values)
+    session = get_session()
+    performance_ref = models.Performance()
+    performance_ref.update(values)
+    with session.begin():
+        performance_ref.save(session=session)
+        return performance_get(context, performance_ref['id'], session=session)
+
+
+@require_context
+def performance_delete(context, performance_id):
+    session = get_session()
+    with session.begin():
+        performance_ref = performance_get(context, performance_id, session)
+        performance_ref.delete(session)
+
+
+@require_context
+def performance_get(context, performance_id, session=None):
+    result = _performance_get_query(context, session).filter_by(id=performance_id).first()
+
+    if result is None:
+        raise exception.NotFound()
+
+    return result
+
+
+@require_context
+def performance_get_all(context, fields=None, limit=None, offset=None,
+                        sort_keys=None, sort_dirs=None):
+    session = get_session()
+    with session.begin():
+        query = _pagination_query(context, session, models.Performance,
+                                  limit=limit, offset=offset,
+                                  sort_keys=sort_keys, sort_dirs=sort_dirs)
+        if query is None:
+            return []
+        if fields is not None:
+            query = query.options(load_only(*fields))
+        return query.all()
+
+
+@require_context
+def performance_get_count(context):
+    return get_count(context, models.Performance, tenant_only=False)
 
 
 def init_db():

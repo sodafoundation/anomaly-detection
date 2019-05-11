@@ -88,3 +88,10 @@ class NotFound(AnomalyDetectionException):
     code = 404
     safe = True
 
+
+class InvalidInput(Invalid):
+    message = "Invalid input received: %(reason)s"
+
+
+class LoopingCallDone(Exception):
+    pass

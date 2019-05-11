@@ -24,10 +24,19 @@ api_opts = [
                help='API server listen ip'),
     cfg.StrOpt('listen_port',
                default='8085',
-               help='API server listen ip'),
-    cfg.StrOpt('train_dataset_path',
-               default='../ml/dataset/',
-               help='Training dataset path')
-]
+               help='API server listen ip')
+
+    ]
 CONF.register_opts(api_opts, "apiserver")
 
+training_opts = [
+    cfg.StrOpt('dataset_source_type',
+               choices=['csv', 'database'],
+               default='csv',
+               help='Training dataset source type'),
+    cfg.StrOpt('dataset_csv_file_name',
+               default='performance.csv',
+               help='Training dataset csv file name')
+]
+
+CONF.register_opts(training_opts, "training")

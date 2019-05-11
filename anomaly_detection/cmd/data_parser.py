@@ -11,7 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
+
+from flask import Flask
+
+from anomaly_detection import log
+from anomaly_detection.api.middleware.auth import NoAuthMiddleWare
+from anomaly_detection.api import v1beta
+from anomaly_detection.api.version import version
+from anomaly_detection.utils import config as cfg
+from anomaly_detection.common import options
+from anomaly_detection.data_parser import manager
+
+CONF = cfg.CONF
 
 
 def main():
-    pass
+    CONF(sys.argv[1:])
+    log.setup(CONF, "anomaly_detection")
+    mgr = manager.Manager('csv')
+    mgr.run()
+
+
+if __name__ == '__main__':
+    sys.exit(main())
