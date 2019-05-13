@@ -15,12 +15,14 @@
 import functools
 import time
 
+from anomaly_detection import log
 from anomaly_detection.context import get_admin_context
 from anomaly_detection.db import base
 from anomaly_detection.exception import LoopingCallDone
 from anomaly_detection.ml import csv
 from anomaly_detection.utils import config as cfg
 
+LOG = log.getLogger(__name__)
 CONF = cfg.CONF
 
 
@@ -62,10 +64,12 @@ class CSVDataReceiver(DataReceiver):
     def __init__(self):
         super(CSVDataReceiver, self).__init__(name="csv")
         self.once = False
-        self.csv_file = 'performance.csv'
+        self.csv_file = CONF.data_parser.csv_file_name
 
     def run(self):
+        LOG.info("CSV Data Receiver running ...")
         perf_array = csv.read(self.csv_file)
+        LOG.info("Starting to write %s items to database", perf_array.shape[0])
         for perf in perf_array:
             perf_dict = {
                 'iops': perf[0],
@@ -74,6 +78,7 @@ class CSVDataReceiver(DataReceiver):
             }
             ctx = get_admin_context()
             self.db.performance_create(ctx, perf_dict)
+        LOG.info("Writing to database is done")
 
 
 class KafkaDataReceiver(DataReceiver):

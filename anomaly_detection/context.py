@@ -31,7 +31,7 @@ class RequestContext(object):
         values = super(RequestContext, self).to_dict()
         values.update({
             'user_id': getattr(self, 'user_id', None),
-            'project_id': getattr(self, 'project_id', None),
+            'tenant_id': getattr(self, 'tenant_id', None),
             'read_deleted': getattr(self, 'read_deleted', None),
             'remote_address': getattr(self, 'remote_address', None),
             'timestamp': self.timestamp.isoformat() if hasattr(

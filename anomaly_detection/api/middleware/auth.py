@@ -34,11 +34,11 @@ class NoAuthMiddleWare(object):
             return [b'X-Auth-Token not found in header']
 
         token = req.headers['X-Auth-Token']
-        user_id, _sep, project_id = token.partition(':')
-        project_id = project_id or user_id
+        user_id, _sep, tenant_id = token.partition(':')
+        tenant_id = tenant_id or user_id
         remote_address = getattr(req, 'remote_address', '127.0.0.1')
         environ["anomaly_detection.context"] = RequestContext(user_id,
-                                                              project_id,
+                                                              tenant_id,
                                                               is_admin=True,
                                                               remote_address=remote_address)
         return self._app(environ, start_response)

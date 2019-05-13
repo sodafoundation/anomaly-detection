@@ -176,7 +176,7 @@ def model_query(context, model, *args, **kwargs):
     :param session: if present, the session to use
     :param read_deleted: if present, overrides context's read_deleted field.
     :param tenant_only: if present and context is user-type, then restrict
-            query to match the context's project_id.
+            query to match the context's tenant_id.
     """
     session = kwargs.get('session') or get_session()
     read_deleted = kwargs.get('read_deleted') or context.read_deleted
