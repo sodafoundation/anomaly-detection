@@ -12,19 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import json
+
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn import metrics
 from sklearn import cluster
+from sklearn import metrics
 
 from anomaly_detection.ml import contants
-from anomaly_detection.ml import dataset as ds
 from anomaly_detection.ml.algorithm import AlgorithmBase
-from anomaly_detection.utils import config as cfg
-
-CONF = cfg.CONF
 
 
 class DBSCAN(AlgorithmBase):
@@ -45,19 +41,22 @@ class DBSCAN(AlgorithmBase):
                     best_ms = min_samples
         return best_ar, best_ep, best_ms
 
-    def create_training(self, training):
-        data_path = CONF.apiserver.train_dataset_path
-        # TODO: add read dataset from database
-        labels_true = ds.read(os.path.join(data_path, 'performance-gt.csv'))
-        data = ds.read(os.path.join(data_path, 'performance-cv.csv'))
+    def _get_training_data(self):
+        data = self.dataset.get(offset=4999, limit=4999)
+        return data[:, 0:2], data[:, 2]
 
+    def _get_test_data(self):
+        data = self.dataset.get(limit=4999)
+        return data[:, 0:2]
+
+    def create_training(self, training):
+        data, labels_true = self._get_training_data()
         # The epsilon and min_samples value with highest adjusted-rand-score will be selected as threshold
         ar_score, eps, min_samples = self._select_parameter(data, labels_true)
         return json.dumps({"adjusted_rand_score": ar_score, "epsilon": eps, "min_samples": min_samples})
 
     def get_training_figure(self, training):
-        data_path = CONF.apiserver.train_dataset_path
-        test_data = ds.read(os.path.join(data_path, 'performance-tr.csv'))
+        test_data = self._get_test_data()
         md = json.loads(training.model_data)
         eps = md["epsilon"]
         min_samples = md["min_samples"]
@@ -68,8 +67,8 @@ class DBSCAN(AlgorithmBase):
 
         fig = plt.figure()
         plt.title('DBSCAN Estimated Figure')
-        plt.xlabel("Latency (ms)")
-        plt.ylabel("Throughput (mb/s)")
+        plt.xlabel("Throughput(IOPS)(IO/s)")
+        plt.ylabel("Latency (us)")
         xy = test_data[(labels == 0)]
         plt.plot(xy[:, 0], xy[:, 1], 'bx')
         xy = test_data[(labels == -1)]
@@ -77,7 +76,7 @@ class DBSCAN(AlgorithmBase):
         return fig
 
     def prediction(self, training, dataset):
-        return dataset
+        pass
 
     def get_prediction_figure(self, training, dataset):
         pass

@@ -11,9 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 
 from numpy import genfromtxt
 
 
-def read(file_path, delimiter=',', max_rows=5000):
-    return genfromtxt(file_path, delimiter=delimiter, max_rows=max_rows)
+def read(file_name, delimiter=',', skip_header=0, max_rows=10000):
+    file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), file_name)
+    return genfromtxt(file_path, delimiter=delimiter, skip_header=skip_header, max_rows=max_rows)
+

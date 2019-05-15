@@ -15,4 +15,4 @@ from flask import Blueprint
 
 service = Blueprint("service", __name__)
 
-from anomaly_detection.api.v1beta import training
+__import__('anomaly_detection.api.v1beta.training')

@@ -97,5 +97,27 @@ def training_get_all_by_tenant(context, tenant_id):
     return IMPL.training_get_all_by_tenant(context, tenant_id)
 
 
+def performance_create(context, performance_values):
+    return IMPL.performance_create(context, performance_values)
+
+
+def performance_delete(context, performance_id):
+    return IMPL.performance_delete(context, performance_id)
+
+
+def performance_get(context, performance_id):
+    return IMPL.performance_get(context, performance_id)
+
+
+def performance_get_all(context, fields=None, limit=None, offset=None,
+                        sort_keys=None, sort_dirs=None):
+    return IMPL.performance_get_all(context, fields=fields, limit=limit, offset=offset,
+                                    sort_keys=sort_keys, sort_dirs=sort_dirs)
+
+
+def performance_get_count(context):
+    return IMPL.performance_get_count(context)
+
+
 def init_db():
     IMPL.init_db()
