@@ -14,6 +14,7 @@
 
 import functools
 import time
+import json
 
 from anomaly_detection import log
 from anomaly_detection.context import get_admin_context
@@ -21,9 +22,28 @@ from anomaly_detection.db import base
 from anomaly_detection.exception import LoopingCallDone
 from anomaly_detection.ml import csv
 from anomaly_detection.utils import config as cfg
+from kafka import KafkaConsumer
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
+
+
+data_parser_opts = [
+    cfg.StrOpt('csv_file_name',
+               default='performance.csv',
+               help='Data receiver source file name'),
+    cfg.StrOpt('kafka_bootstrap_servers',
+               default='localhost:9092',
+               help='kafka bootstrap server'),
+    cfg.StrOpt('kafka_topic',
+               default='telemetry_topic',
+               help='kafka topic'),
+    cfg.IntOpt('kafka_retry_num',
+               default=3,
+               help='kafka retry num')
+]
+
+CONF.register_opts(data_parser_opts, "data_parser")
 
 
 class LoopingCall(object):
@@ -85,14 +105,36 @@ class KafkaDataReceiver(DataReceiver):
     def __init__(self):
         super(KafkaDataReceiver, self).__init__(name="kafka")
 
-    @LoopingCall(60)
+    def consume(self):
+        consumer = KafkaConsumer(CONF.data_parser.kafka_topic,
+                                 bootstrap_servers=CONF.data_parser.kafka_bootstrap_servers)
+        import uuid
+        print(uuid.uuid4())
+        for msg in consumer:
+            perf = json.loads(msg.value)
+            LOG.info("receive performance data:%s", perf)
+            ctx = get_admin_context()
+            self.db.performance_create(ctx, perf)
+
     def run(self):
-        raise NotImplemented
+        retry = CONF.data_parser.kafka_retry_num
+        for index in range(1, retry+1):
+            try:
+                self.consume()
+            except KeyboardInterrupt:
+                LOG.info("Bye!")
+                break
+            except Exception as e:
+                if index > retry:
+                    LOG.error('%s\nall retry failed, exit.', e)
+                    raise
+                else:
+                    LOG.error("%s ,retry %d time(s)", e, index)
 
 
 class Manager(base.Base):
     def __init__(self, receiver_name):
-        super(Manager).__init__()
+        super(Manager, self).__init__()
         if receiver_name == 'csv':
             self._receiver = CSVDataReceiver()
         else:

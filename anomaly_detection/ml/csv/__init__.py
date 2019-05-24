@@ -18,5 +18,6 @@ from numpy import genfromtxt
 
 def read(file_name, delimiter=',', skip_header=0, max_rows=10000):
     file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), file_name)
+    skip_header += 1  # for title
     return genfromtxt(file_path, delimiter=delimiter, skip_header=skip_header, max_rows=max_rows)
 

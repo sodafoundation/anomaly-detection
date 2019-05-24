@@ -21,9 +21,25 @@ from anomaly_detection.api.middleware.auth import NoAuthMiddleWare
 from anomaly_detection.api import v1beta
 from anomaly_detection.api.version import version
 from anomaly_detection.utils import config as cfg
-from anomaly_detection.common import options
+from anomaly_detection.common import options # load configuration, don't remove
 
 CONF = cfg.CONF
+
+api_opts = [
+    cfg.StrOpt('listen_ip',
+               default='0.0.0.0',
+               help='API server listen ip'),
+    cfg.StrOpt('listen_port',
+               default='8085',
+               help='API server listen ip'),
+    cfg.StrOpt('dbscan_figure_style',
+               default='blue_red',
+               choices=['blue_red', 'core_border_spectral'],
+               help='DBSCAN figure output style')
+
+    ]
+
+CONF.register_opts(api_opts, "apiserver")
 
 
 class ServerManager:

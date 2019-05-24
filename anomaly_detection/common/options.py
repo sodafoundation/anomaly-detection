@@ -18,25 +18,3 @@ from anomaly_detection.utils import config as cfg
 CONF = cfg.CONF
 log.register_opts(CONF)
 
-api_opts = [
-    cfg.StrOpt('listen_ip',
-               default='0.0.0.0',
-               help='API server listen ip'),
-    cfg.StrOpt('listen_port',
-               default='8085',
-               help='API server listen ip')
-
-    ]
-CONF.register_opts(api_opts, "apiserver")
-
-training_opts = [
-    cfg.StrOpt('dataset_source_type',
-               choices=['csv', 'database'],
-               default='csv',
-               help='Training dataset source type'),
-    cfg.StrOpt('dataset_csv_file_name',
-               default='performance.csv',
-               help='Training dataset csv file name')
-]
-
-CONF.register_opts(training_opts, "training")
