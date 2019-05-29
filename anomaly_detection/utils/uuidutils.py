@@ -29,7 +29,6 @@ def generate_uuid(dashed=True):
     :type dashed: bool
     :returns: string
     """
-    print(uuid)
     if dashed:
         return str(uuid.uuid4())
     return uuid.uuid4().hex

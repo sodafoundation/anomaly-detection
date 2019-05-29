@@ -108,8 +108,6 @@ class KafkaDataReceiver(DataReceiver):
     def consume(self):
         consumer = KafkaConsumer(CONF.data_parser.kafka_topic,
                                  bootstrap_servers=CONF.data_parser.kafka_bootstrap_servers)
-        import uuid
-        print(uuid.uuid4())
         for msg in consumer:
             perf = json.loads(msg.value)
             LOG.info("receive performance data:%s", perf)
