@@ -23,7 +23,7 @@ from sqlalchemy.sql import func
 
 from anomaly_detection import exception
 from anomaly_detection.db.sqlalchemy import models
-from anomaly_detection.utils import uuid, config as cfg
+from anomaly_detection.utils import uuidutils, config as cfg
 
 CONF = cfg.CONF
 
@@ -200,7 +200,7 @@ def model_query(context, model, *args, **kwargs):
 
 def ensure_model_dict_has_id(model_dict):
     if not model_dict.get('id'):
-        model_dict['id'] = uuid.generate_uuid()
+        model_dict['id'] = uuidutils.generate_uuid()
     return model_dict
 
 

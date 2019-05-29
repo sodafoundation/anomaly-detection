@@ -24,10 +24,7 @@ CONF = cfg.CONF
 data_parser_opts = [
     cfg.StrOpt('receiver_name',
                default='csv',
-               help='Data receiver name'),
-    cfg.StrOpt('csv_file_name',
-               default='performance.csv',
-               help='Data receiver source file name')
+               help='Data receiver name')
 ]
 
 CONF.register_opts(data_parser_opts, "data_parser")

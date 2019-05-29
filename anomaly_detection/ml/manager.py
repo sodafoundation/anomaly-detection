@@ -17,6 +17,24 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
 from anomaly_detection.db.base import Base
 from anomaly_detection.utils import import_object
+from anomaly_detection.utils import config as cfg
+
+CONF = cfg.CONF
+
+training_opts = [
+    cfg.StrOpt('dataset_source_type',
+               choices=['csv', 'database'],
+               default='csv',
+               help='Training dataset source type'),
+    cfg.StrOpt('dataset_csv_file_name',
+               default='performance.csv',
+               help='Training dataset csv file name'),
+    cfg.IntOpt('dataset_number',
+               default=10000,
+               help='Dataset number which is used to training')
+]
+
+CONF.register_opts(training_opts, "training")
 
 
 def print_figure(fig, fmt='png'):

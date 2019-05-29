@@ -17,11 +17,14 @@ import numpy as np
 from scipy.stats import multivariate_normal
 from sklearn.metrics import f1_score
 
+from anomaly_detection import log
 from anomaly_detection.ml import contants
 from anomaly_detection.ml.algorithm import AlgorithmBase
 from anomaly_detection.utils import config as cfg
 from anomaly_detection.utils import np_json
 
+CONF = cfg.CONF
+LOG = log.getLogger(__name__)
 
 def feature_normalize(dataset):
     mu = np.mean(dataset, axis=0)
@@ -61,12 +64,14 @@ class Gaussian(AlgorithmBase):
     def _get_cv_and_gt(self):
         # cv: cross validation dataset
         # gt: ground truth dataset
-        data = self.dataset.get(offset=4999, limit=4999)
+        num = CONF.training.dataset_number
+        data = self.dataset.get(offset=num//2, limit=num)
         return data[:, 0:2], data[:, 2]
 
     def _get_tr(self):
         # tr: training dataset
-        data = self.dataset.get(limit=4999)
+        num = CONF.training.dataset_number
+        data = self.dataset.get(limit=num//2)
         return data[:, 0:2]
 
     def create_training(self, training):
@@ -77,6 +82,7 @@ class Gaussian(AlgorithmBase):
         # The epsilon value with highest f-score will be selected as threshold
         f1score, ep = select_threshold_by_cv(p_cv, gt_data)
         model_data = {"mu": mu, "sigma": sigma, "epsilon": ep, "f1_score": f1score}
+        LOG.info("parameter: %s", model_data)
         return np_json.dumps(model_data)
 
     def get_training_figure(self, training):
@@ -86,15 +92,18 @@ class Gaussian(AlgorithmBase):
         mu = md.get("mu")
         sigma = md.get("sigma")
         ep = md.get("epsilon")
-
+        f1score = md.get("f1_score")
+        LOG.info('mu: %s, sigma: %s, epsilon: %s, f1_score: %s', mu, sigma, ep, f1score)
         p = multivariate_gaussian(test_data, mu, sigma)
-        outliers = np.asarray(np.where(p < ep))
+        outliers = test_data[(p < ep)]
         fig = plt.figure()
         plt.title('Gaussian Estimated Figure')
-        plt.xlabel("Throughput(IOPS)(IO/s)")
-        plt.ylabel("Latency (us)")
-        plt.plot(test_data[:, 0], test_data[:, 1], "bx")
-        plt.plot(test_data[outliers, 0], test_data[outliers, 1], "ro")
+        plt.xlabel("IOPS (tps)")
+        plt.ylabel("Latency (μs)")
+        plt.plot(test_data[:, 0], test_data[:, 1], "bx", label='normal point')
+        plt.plot(outliers[:, 0], outliers[:, 1], "ro", label='outlier point')
+        plt.legend(loc='upper right')
+
         return fig
 
     def prediction(self, training, dataset):
