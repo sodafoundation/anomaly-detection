@@ -128,6 +128,8 @@ class KafkaDataReceiver(DataReceiver):
                     raise
                 else:
                     LOG.error("%s ,retry %d time(s)", e, index)
+            else:
+                break
 
 
 class Manager(base.Base):
