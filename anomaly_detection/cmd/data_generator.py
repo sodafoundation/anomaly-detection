@@ -11,7 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
+
+from anomaly_detection import log
+from anomaly_detection.data_generator.generator import Generator
+from anomaly_detection.utils import config as cfg
+# need register global_opts
+from anomaly_detection.common import options
+
+CONF = cfg.CONF
 
 
 def main():
-    pass
+    CONF(sys.argv[1:])
+    log.setup(CONF, "anomaly_detection")
+    generator = Generator()
+    generator.load_jobs()
+    generator.run()
+
+
+if __name__ == '__main__':
+    sys.exit(main())
+
