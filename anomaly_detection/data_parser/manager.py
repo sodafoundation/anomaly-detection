@@ -36,7 +36,7 @@ data_parser_opts = [
                default='localhost:9092',
                help='kafka bootstrap server'),
     cfg.StrOpt('kafka_topic',
-               default='telemetry_topic',
+               default='metrics',
                help='kafka topic'),
     cfg.IntOpt('kafka_retry_num',
                default=3,
