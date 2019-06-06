@@ -17,41 +17,42 @@ if you want to install a specified branch, run command like blow:
 ```shell
 $ pip install git+https://github.com/opensds/anomaly-detection.git@0.5.3
 ```
+
 ## Configuration
-Anomaly detection will get metrics from from Telemetry, before modifying the configuration file, please make sure the telemetry is started up.
+Anomaly detection will get metrics from from Telemetry, before modifying the configuration file, please make sure the telemetry is started up(Note: add telemetry installation guide later).
 *  Create configuration template file.
 
-If your python version is less than 3.0, please skip this steps, due to the template configuration file has already been copied to the ```/etc/anomaly-detection``` by pip tool automatically.
-```
-# please note the python version
-$ cp /usr/local/lib/python3.5/dist-packages/etc/anomaly_detection /etc
-```
+    If your python version is less than 3.0, please skip this steps, due to the template configuration file has already been copied to the ```/etc/anomaly-detection``` by pip tool automatically.
+    ```
+    # please note the python version
+    $ cp /usr/local/lib/python3.5/dist-packages/etc/anomaly_detection /etc
+    ```
 
 ## Startup Services
 There are three services in anomaly-detection project: api-server, data-generator, data-parser.
+
 ### Startup api-server
 * Initialize the database.
-```shell
-$ anomaly-detection-manage db sync --config-file /etc/anomaly_detection/anomaly_detection.conf 
-```
+    ```shell
+    $ anomaly-detection-manage db sync --config-file /etc/anomaly_detection/anomaly_detection.conf 
+    ```
 * Startup
-```shell
-$ anomaly-detection-api --config-file /etc/anomaly_detection/anomaly_detection.conf
-```
+    ```shell
+    $ anomaly-detection-api --config-file /etc/anomaly_detection/anomaly_detection.conf
+    ```
 * Check if server is started successfully
-```shell
-$ curl http://127.0.0.1:8085
-```
+    ```shell
+    $ curl http://127.0.0.1:8085
+    ```
 
 ### Startup the data-parser
-
-* Open the configuration file(```/etc/anomaly_detection/anomaly_detection.conf```) and modify the data_parser relative options in data_parser section.One possible configuration would be like blow:
-```
-[data_parser]
-receiver_name=kafka
-kafka_topic=metrics
-kafka_bootstrap_servers=127.0.0.1:9092
-```
+* Open the configuration file(```/etc/anomaly_detection/anomaly_detection.conf```) and modify the data_parser relative options in data_parser section. One possible configuration would be like blow:
+    ```
+    [data_parser]
+    receiver_name=kafka
+    kafka_topic=metrics
+    kafka_bootstrap_servers=127.0.0.1:9092
+    ```
 * Startup
 ```shell
 anomaly-detection-data-parser --config-file /etc/anomaly_detection/anomaly_detection.conf
@@ -59,28 +60,26 @@ anomaly-detection-data-parser --config-file /etc/anomaly_detection/anomaly_detec
 
 ### Startup the data-generator
 * Data-generator service will send an API request to the telemetry service periodically, so the credentials are required by data-generator. Open the configuration file(```/etc/anomaly_detection/anomaly_detection.conf```) and modify the keystone relative options in keystone_authtoken section. One possible configuration would be like blow:
-```shell
-[keystone_authtoken]
-project_domain_name = Default
-project_name = admin
-user_domain_name = Default
-password = opensds@123
-username = admin
-auth_url = http://127.0.0.1/identity
-auth_type = password
-```
+    ```shell
+    [keystone_authtoken]
+    project_domain_name = Default
+    project_name = admin
+    user_domain_name = Default
+    password = opensds@123
+    username = admin
+    auth_url = http://127.0.0.1/identity
+    auth_type = password
+    ```
 * Open the configuration file(```/etc/anomaly_detection/anomaly_detection.conf```) and modify the data-generator relative options in data_generator section. One possible configuration would be like blow:
-
-```shell
-[data_generator]
-opensds_endpoint = http://127.0.0.1:50040
-api_version = v1beta
-auth_strategy = keystone
-http_log_debug = true
-opensds_backend_driver_type = lvm
-```
-
+    ```shell
+    [data_generator]
+    opensds_endpoint = http://127.0.0.1:50040
+    api_version = v1beta
+    auth_strategy = keystone
+    http_log_debug = true
+    opensds_backend_driver_type = lvm
+    ```
 * Startup
-```shell
-anomaly-detection-data-generator --config-file /etc/anomaly_detection/anomaly_detection.conf
-```
+    ```shell
+    anomaly-detection-data-generator --config-file /etc/anomaly_detection/anomaly_detection.conf
+    ```
