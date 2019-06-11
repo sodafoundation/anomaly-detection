@@ -19,14 +19,13 @@ $ pip install git+https://github.com/opensds/anomaly-detection.git@0.5.3
 ```
 
 ## Configuration
-Anomaly detection will get metrics from from Telemetry, before modifying the configuration file, please make sure the telemetry is started up(Note: add telemetry installation guide later).
-*  Create configuration template file.
+Anomaly detection will get metrics from Telemetry, before modifying the configuration file, please make sure the telemetry is started up (Note: add telemetry installation guide later).
 
-    If your python version is less than 3.0, please skip this steps, due to the template configuration file has already been copied to the ```/etc/anomaly-detection``` by pip tool automatically.
-    ```
-    # please note the python version
-    $ cp /usr/local/lib/python3.5/dist-packages/etc/anomaly_detection /etc
-    ```
+If your python version is greater than 3.0, run follow command to copy the template configuration file to ```/etc/```,otherwise please skip this step, because the template configuration file has already been copied to the ```/etc/anomaly-detection``` by pip tool automatically.
+```
+# please note the python version
+$ cp /usr/local/lib/python3.5/dist-packages/etc/anomaly_detection /etc
+```
 
 ## Startup Services
 There are three services in anomaly-detection project: api-server, data-generator, data-parser.
@@ -46,7 +45,7 @@ There are three services in anomaly-detection project: api-server, data-generato
     ```
 
 ### Startup the data-parser
-* Open the configuration file(```/etc/anomaly_detection/anomaly_detection.conf```) and modify the data_parser relative options in data_parser section. One possible configuration would be like blow:
+* Open the configuration file(```/etc/anomaly_detection/anomaly_detection.conf```) and modify the data_parser relative options in data_parser section. One possible configuration would be like below:
     ```
     [data_parser]
     receiver_name=kafka
