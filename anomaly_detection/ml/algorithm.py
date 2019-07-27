@@ -23,7 +23,7 @@ CONF = cfg.CONF
 
 class DataSet(object):
     def get(self, offset=0, limit=1000):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class CSVDataSet(DataSet):
@@ -59,13 +59,13 @@ class AlgorithmBase(object):
             self.dataset = CSVDataSet(CONF.training.dataset_csv_file_name)
 
     def create_training(self, training):
-        raise NotImplemented
+        raise NotImplementedError
 
     def get_training_figure(self, training):
-        raise NotImplemented
+        raise NotImplementedError
 
     def prediction(self, training, dataset):
-        raise NotImplemented
+        raise NotImplementedError
 
     def get_prediction_figure(self, training, dataset):
-        raise NotImplemented
+        raise NotImplementedError
